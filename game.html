@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<title>Friendship Slots</title>
+<style>
+  body { 
+    text-align: center; 
+    font-family: Arial, sans-serif; 
+    background-color: #1a1a1a; 
+    color: white; 
+    margin-top: 50px;
+  }
+  .slot-machine { 
+    display: inline-block; 
+    background: #2a2a2a; 
+    padding: 30px; 
+    border-radius: 15px; 
+    border: 5px solid #d4af37; 
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  }
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 120px); 
+    gap: 15px; 
+    margin-bottom: 25px; 
+    position: relative;
+  }
+  /* Η γραμμή κέρδους στη μέση */
+  .payline {
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    right: -20px;
+    height: 4px;
+    background-color: rgba(255, 0, 0, 0.6);
+    transform: translateY(-50%);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .cell { 
+    width: 120px; 
+    height: 120px; 
+    background: #111; 
+    overflow: hidden; 
+    border-radius: 8px; 
+    border: 2px solid #444;
+  }
+  .cell img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+  }
+  button { 
+    padding: 15px 40px; 
+    font-size: 24px; 
+    cursor: pointer; 
+    background-color: #d4af37; 
+    color: black; 
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+  }
+  button:hover:not(:disabled) {
+    background-color: #f1c40f;
+  }
+  button:disabled { 
+    background-color: #555; 
+    color: #888;
+    cursor: not-allowed; 
+  }
+  #message { 
+    margin-top: 25px; 
+    font-size: 28px; 
+    font-weight: bold; 
+    min-height: 35px; 
+  }
+  .stats {
+    margin-top: 15px;
+    color: #fff;
+    font-size: 20px;
+    background: #111;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #444;
+  }
+  .balance-highlight {
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 24px;
+  }
+  
+  /* Στυλ για το Bonus Popup */
+  #bonus-popup { 
+    display: none; 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    background: #8b0000; /* Σκούρο κόκκινο για πιο τρομακτικό ύφος */
+    color: white; 
+    padding: 50px; 
+    border-radius: 15px; 
+    font-size: 40px; 
+    font-weight: bold; 
+    z-index: 1000; 
+    text-align: center; 
+    box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+    border: 5px solid black;
+    animation: popIn 0.2s ease-out forwards;
+  }
+  #overlay { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.9); 
+    z-index: 999; 
+  }
+
+  @keyframes popIn {
+    0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<audio id="bgMusic" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+<audio id="scarySound">
+  <source src="scary.mp3" type="audio/mpeg">
+</audio>
+
+<h1>The Friendship Slot Machine</h1>
+
+<div class="slot-machine">
+  <div class="grid" id="grid">
+    <div class="payline"></div>
+    <div class="cell"><img src="img1.png" id="c0"></div>
+    <div class="cell"><img src="img2.png" id="c1"></div>
+    <div class="cell"><img src="img3.png" id="c2"></div>
+    <div class="cell"><img src="img2.png" id="c3"></div>
+    <div class="cell"><img src="img3.png" id="c4"></div>
+    <div class="cell"><img src="img1.png" id="c5"></div>
+    <div class="cell"><img src="img3.png" id="c6"></div>
+    <div class="cell"><img src="img1.png" id="c7"></div>
+    <div class="cell"><img src="img2.png" id="c8"></div>
+  </div>
+  
+  <button id="spinBtn" onclick="startSpin()">Spin (1€)</button>
+  <div id="message"></div>
+  
+  <div class="stats">
+    Υπόλοιπο: <span id="balanceDisplay" class="balance-highlight">10</span>€ | Στροφές: <span id="spinCount">0</span>
+  </div>
+</div>
+
+<div id="overlay" onclick="closeBonus()"></div>
+<div id="bonus-popup" onclick="closeBonus()">ΜΠΗΚΕΣ ΜΠΟΝΟΥΣ<br>ΚΑΝΕ ΤΑΥΤΟΠΟΙΗΣΗ</div>
+
+<script>
+  const images = ['img1.png', 'img2.png', 'img3.png'];
+  let spins = 0;
+  let balance = 10;
+  const bet = 1;
+  let isSpinning = false;
+  let musicStarted = false;
+
+  function getRandomImage() {
+    return images[Math.floor(Math.random() * images.length)];
+  }
+
+  function startSpin() {
+    if (isSpinning) return;
+    
+    // Ξεκινάει η μουσική στο πρώτο κλικ
+    if (!musicStarted) {
+      document.getElementById('bgMusic').volume = 0.5; // Ένταση μουσικής 50%
+      document.getElementById('bgMusic').play().catch(e => console.log("Απαιτείται αλληλεπίδραση για τον ήχο."));
+      musicStarted = true;
+    }
+
+    if (balance < bet) {
+      document.getElementById('message').innerText = "Δεν έχεις αρκετά χρήματα!";
+      document.getElementById('message').style.color = "#f44336";
+      return;
+    }
+
+    // Αφαίρεση πονταρίσματος
+    balance -= bet;
+    updateBalanceDisplay();
+
+    isSpinning = true;
+    spins++;
+    
+    document.getElementById('spinCount').innerText = spins;
+    document.getElementById('message').innerText = "Γυρνάει...";
+    document.getElementById('message').style.color = "white";
+    document.getElementById('spinBtn').disabled = true;
+
+    // Εφέ περιστροφής (αλλάζει εικόνες γρήγορα)
+    let spinInterval = setInterval(() => {
+      for(let i = 0; i < 9; i++) {
+         document.getElementById('c'+i).src = getRandomImage();
+      }
+    }, 100); 
+
+    // Σταματάει μετά από 1.5 δευτερόλεπτο
+    setTimeout(() => {
+      clearInterval(spinInterval);
+      finalizeSpin();
+    }, 1500); 
+  }
+
+  function finalizeSpin() {
+    let middleRow = [];
+    
+    if (spins === 10) {
+      // 10ο Spin - Προκαθορισμένο αποτέλεσμα
+      for(let i = 0; i < 9; i++) {
+        let img = (i >= 3 && i <= 5) ? 'img2.png' : getRandomImage(); 
+        document.getElementById('c'+i).src = img;
+        if(i >= 3 && i <= 5) middleRow.push(img);
+      }
+    } else {
+      // Κανονικό τυχαίο spin
+      for(let i = 0; i < 9; i++) {
+         let img = getRandomImage();
+         document.getElementById('c'+i).src = img;
+         if(i >= 3 && i <= 5) middleRow.push(img);
+      }
+    }
+
+    checkWin(middleRow);
+    isSpinning = false;
+    document.getElementById('spinBtn').disabled = false;
+  }
+
+  function checkWin(row) {
+    if (spins === 10) {
+      // Trigger το Bonus Event
+      document.getElementById('bgMusic').pause(); // Σταματάει η χαρούμενη μουσική
+      let scaryAudio = document.getElementById('scarySound');
+      scaryAudio.volume = 1.0;
+      scaryAudio.play();
+
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('bonus-popup').style.display = 'block';
+      document.getElementById('message').innerText = "";
+      return;
+    }
+
+    // Έλεγχος αν και τα 3 σύμβολα είναι ΙΔΙΑ
+    let uniqueSymbols = new Set(row);
+    
+    if (uniqueSymbols.size === 1) {
+      // Νίκη: 3 ίδια
+      let winnings = bet * 3;
+      balance += winnings;
+      updateBalanceDisplay();
+      
+      document.getElementById('message').innerText = `Κέρδισες ${winnings}€!`;
+      document.getElementById('message').style.color = "#4CAF50"; // Πράσινο
+    } else {
+      // Ήττα
+      document.getElementById('message').innerText = "Δεν κέρδισες. Ξανά προσπάθησε!";
+      document.getElementById('message').style.color = "#aaa"; // Γκρι
+    }
+  }
+
+  function updateBalanceDisplay() {
+    document.getElementById('balanceDisplay').innerText = balance;
+  }
+
+  function closeBonus() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('bonus-popup').style.display = 'none';
+    document.getElementById('bgMusic').play(); // Ξεκινάει πάλι η μουσική
+  }
+</script>
+</body>
+</html>
