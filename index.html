@@ -309,6 +309,14 @@
     });
   };
 
+  // Keyboard spacebar trigger
+  window.addEventListener('keydown', function(e) {
+    if (e.code === 'Space' || e.key === ' ') {
+      e.preventDefault(); 
+      startSpin();
+    }
+  });
+
   function getRandomImage() {
     return images[Math.floor(Math.random() * images.length)];
   }
@@ -338,7 +346,6 @@
     document.getElementById('message').style.color = "#a0a0b0";
     document.getElementById('spinBtn').disabled = true;
 
-    // Add CSS blur and subtle bounce scale during tumbling
     for(let i = 0; i < 9; i++) {
       document.getElementById('box' + i).classList.add('blur-effect');
     }
@@ -402,7 +409,7 @@
       updateBalanceDisplay();
       
       document.getElementById('message').innerText = `Κέρδισες ${winnings}€!`;
-      document.getElementById('message').style.color = var(--win-green); 
+      document.getElementById('message').style.color = "#00E676"; // Fixed: Changed from raw CSS variable syntax to string color literal
     } else {
       document.getElementById('message').innerText = "Δεν κέρδισες. Ξανά προσπάθησε!";
       document.getElementById('message').style.color = "#6a6a7a"; 
