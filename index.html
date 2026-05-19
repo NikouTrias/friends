@@ -221,6 +221,7 @@
 
     // --- NEW COIN SOUND LOGIC ---
     let coinAudio = document.getElementById('coinSound');
+    coinAudio.volume = 0.2;
     coinAudio.currentTime = 0; // Rewinds to the start instantly
     coinAudio.play().catch(e => console.log("Audio blocked until interaction"));
     // ----------------------------
