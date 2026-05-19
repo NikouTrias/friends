@@ -5,138 +5,230 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Friendship Slots</title>
 <style>
+  :root {
+    --gold: #FFD700;
+    --gold-glow: rgba(255, 215, 0, 0.35);
+    --bg-dark: #0f0f12;
+    --card-bg: #1a1a24;
+    --win-green: #00E676;
+    --panel-bg: #111116;
+  }
+
   body { 
     text-align: center; 
-    font-family: Arial, sans-serif; 
-    background-color: #1a1a1a; 
-    color: white; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background-color: var(--bg-dark); 
+    color: #f5f5f7; 
     margin: 0;
-    padding: 10px 5px; 
+    padding: 20px 12px; 
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    justify-content: center;
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin: 0 0 20px 0;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
   }
   
   .slot-machine { 
     width: 100%;
-    max-width: 550px; 
-    background: #2a2a2a; 
-    padding: 12px; 
-    border-radius: 12px; 
-    border: 4px solid #d4af37; 
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+    max-width: 480px; 
+    background: var(--card-bg); 
+    padding: 24px; 
+    border-radius: 24px; 
+    border: 1px solid rgba(255, 215, 0, 0.2); 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px var(--gold-glow);
     box-sizing: border-box;
   }
   
+  .grid-container {
+    position: relative;
+    background: var(--panel-bg);
+    padding: 12px;
+    border-radius: 16px;
+    border: 2px solid #2a2a3a;
+    margin-bottom: 20px;
+    box-shadow: inset 0 4px 20px rgba(0,0,0,0.6);
+  }
+
   .grid { 
     display: grid; 
     grid-template-columns: repeat(3, 1fr); 
-    gap: 5px; 
-    margin-bottom: 15px; 
+    gap: 10px; 
     position: relative;
   }
   
   .payline {
     position: absolute;
     top: 50%;
-    left: -5px;
-    right: -5px;
+    left: -12px;
+    right: -12px;
     height: 4px;
-    background-color: rgba(255, 0, 0, 0.6);
+    background: linear-gradient(90deg, transparent, #ff3366, #ff3366, transparent);
     transform: translateY(-50%);
     z-index: 10;
     pointer-events: none;
+    box-shadow: 0 0 10px #ff3366;
   }
   
   .cell { 
     width: 100%; 
     aspect-ratio: 1 / 1; 
-    height: auto; 
-    background: #111; 
+    background: #0a0a0f; 
     overflow: hidden; 
-    border-radius: 6px; 
-    border: 2px solid #444;
+    border-radius: 12px; 
+    border: 1px solid #3a3a4a;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease-out;
   }
   
   .cell img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
+    width: 85%; 
+    height: 85%; 
+    object-fit: contain; 
     display: block;
+    transition: filter 0.1s ease;
+  }
+
+  .blur-effect img {
+    filter: blur(4px);
+    transform: scaleY(1.2);
   }
   
   button { 
     width: 100%;
-    padding: 18px 0; 
-    font-size: 26px; 
+    padding: 16px 0; 
+    font-size: 1.35rem; 
     cursor: pointer; 
-    background-color: #d4af37; 
-    color: black; 
+    background: linear-gradient(135deg, #FFE043 0%, #D4AF37 100%);
+    color: #000; 
     border: none; 
-    border-radius: 8px; 
-    font-weight: bold;
+    border-radius: 14px; 
+    font-weight: 700;
     text-transform: uppercase;
-    transition: background-color 0.2s;
-    margin-top: 5px;
+    letter-spacing: 1px;
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+    transition: all 0.2s ease;
   }
   
-  button:hover:not(:disabled) { background-color: #f1c40f; }
-  button:disabled { background-color: #555; color: #888; cursor: not-allowed; }
+  button:hover:not(:disabled) { 
+    background: linear-gradient(135deg, #fff 0%, #FFE043 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.5);
+  }
+
+  button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  button:disabled { 
+    background: #2a2a35; 
+    color: #5a5a6a; 
+    cursor: not-allowed; 
+    box-shadow: none;
+    transform: none;
+  }
   
   #message { 
-    margin-top: 15px; 
-    font-size: 24px; 
-    font-weight: bold; 
-    min-height: 35px; 
+    margin: 15px 0; 
+    font-size: 1.2rem; 
+    font-weight: 600; 
+    min-height: 28px; 
+    letter-spacing: 0.5px;
   }
   
   .stats {
-    margin-top: 10px;
-    color: #fff;
-    font-size: 18px;
-    background: #111;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #444;
+    color: #a0a0b0;
+    font-size: 0.95rem;
+    background: var(--panel-bg);
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #22222a;
     display: flex;
     justify-content: space-around;
+    align-items: center;
+  }
+
+  .stat-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6a6a7a;
   }
   
-  .balance-highlight { color: #4CAF50; font-weight: bold; font-size: 24px; }
+  .balance-highlight { 
+    color: var(--win-green); 
+    font-weight: 700; 
+    font-size: 1.4rem; 
+  }
+
+  .spin-highlight {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.4rem;
+  }
   
   #bonus-popup { 
     display: none; 
     position: fixed; 
     top: 50%; 
     left: 50%; 
-    width: 90%;
-    max-width: 450px;
+    width: 88%;
+    max-width: 400px;
     transform: translate(-50%, -50%); 
-    background: #8b0000; 
+    background: linear-gradient(145deg, #8b0000 0%, #4a0000 100%); 
     color: white; 
-    padding: 30px 20px; 
-    border-radius: 15px; 
-    font-size: 32px; 
-    font-weight: bold; 
+    padding: 35px 25px; 
+    border-radius: 24px; 
+    font-size: 1.8rem; 
+    font-weight: 800; 
     z-index: 1000; 
     text-align: center; 
-    box-shadow: 0 0 50px rgba(255, 0, 0, 0.9);
-    border: 4px solid black;
-    animation: popIn 0.2s ease-out forwards;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 50px rgba(255, 0, 0, 0.4);
+    border: 2px solid rgba(255,255,255,0.1);
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     box-sizing: border-box;
+  }
+
+  #bonus-popup .sub-text {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #ffb3b3;
+    margin-top: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
   }
   
   #overlay { 
     display: none; 
     position: fixed; 
     top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.9); 
+    background: rgba(5, 5, 8, 0.85); 
+    backdrop-filter: blur(8px);
     z-index: 999; 
   }
 
   @keyframes popIn {
-    0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+    0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
     100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
   }
 </style>
@@ -153,33 +245,44 @@
   <source src="coin.mp3" type="audio/mpeg">
 </audio>
 
-<h1 style="font-size: 26px; margin: 10px 0 15px 0;">The Friendship Slots</h1>
+<h1>The Friendship Slots</h1>
 
 <div class="slot-machine">
-  <div class="grid" id="grid">
+  <div class="grid-container">
     <div class="payline"></div>
-    <div class="cell"><img src="img1.png" id="c0"></div>
-    <div class="cell"><img src="img2.png" id="c1"></div>
-    <div class="cell"><img src="img3.png" id="c2"></div>
-    <div class="cell"><img src="img2.png" id="c3"></div>
-    <div class="cell"><img src="img3.png" id="c4"></div>
-    <div class="cell"><img src="img1.png" id="c5"></div>
-    <div class="cell"><img src="img3.png" id="c6"></div>
-    <div class="cell"><img src="img1.png" id="c7"></div>
-    <div class="cell"><img src="img2.png" id="c8"></div>
+    <div class="grid" id="grid">
+      <div class="cell" id="box0"><img src="img1.png" id="c0"></div>
+      <div class="cell" id="box1"><img src="img2.png" id="c1"></div>
+      <div class="cell" id="box2"><img src="img3.png" id="c2"></div>
+      <div class="cell" id="box3"><img src="img2.png" id="c3"></div>
+      <div class="cell" id="box4"><img src="img3.png" id="c4"></div>
+      <div class="cell" id="box5"><img src="img1.png" id="c5"></div>
+      <div class="cell" id="box6"><img src="img3.png" id="c6"></div>
+      <div class="cell" id="box7"><img src="img1.png" id="c7"></div>
+      <div class="cell" id="box8"><img src="img2.png" id="c8"></div>
+    </div>
   </div>
   
   <button id="spinBtn" onclick="startSpin()">Spin (1€)</button>
   <div id="message"></div>
   
   <div class="stats">
-    <span>Υπόλοιπο: <span id="balanceDisplay" class="balance-highlight">10</span>€</span>
-    <span>Στροφές: <span id="spinCount">0</span></span>
+    <div class="stat-block">
+      <span class="stat-label">Υπόλοιπο</span>
+      <span><span id="balanceDisplay" class="balance-highlight">10</span>€</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-label">Στροφές</span>
+      <span id="spinCount" class="spin-highlight">0</span>
+    </div>
   </div>
 </div>
 
 <div id="overlay" onclick="closeBonus()"></div>
-<div id="bonus-popup" onclick="closeBonus()">ΜΠΗΚΕΣ ΜΠΟΝΟΥΣ<br>ΚΑΝΕ ΤΑΥΤΟΠΟΙΗΣΗ</div>
+<div id="bonus-popup" onclick="closeBonus()">
+  ΜΠΗΚΕΣ ΜΠΟΝΟΥΣ
+  <div class="sub-text">Κάνε ταυτοποίηση</div>
+</div>
 
 <script>
   const images = ['img1.png', 'img2.png', 'img3.png'];
@@ -215,16 +318,14 @@
 
     if (balance < bet) {
       document.getElementById('message').innerText = "Δεν έχεις αρκετά χρήματα!";
-      document.getElementById('message').style.color = "#f44336";
+      document.getElementById('message').style.color = "#ff3366";
       return;
     }
 
-    // --- NEW COIN SOUND LOGIC ---
     let coinAudio = document.getElementById('coinSound');
     coinAudio.volume = 0.1;
-    coinAudio.currentTime = 0; // Rewinds to the start instantly
-    coinAudio.play().catch(e => console.log("Audio blocked until interaction"));
-    // ----------------------------
+    coinAudio.currentTime = 0;
+    coinAudio.play().catch(e => console.log("Audio blocked"));
 
     balance -= bet;
     updateBalanceDisplay();
@@ -234,17 +335,25 @@
     
     document.getElementById('spinCount').innerText = spins;
     document.getElementById('message').innerText = "Γυρνάει...";
-    document.getElementById('message').style.color = "white";
+    document.getElementById('message').style.color = "#a0a0b0";
     document.getElementById('spinBtn').disabled = true;
+
+    // Add CSS blur and subtle bounce scale during tumbling
+    for(let i = 0; i < 9; i++) {
+      document.getElementById('box' + i).classList.add('blur-effect');
+    }
 
     let spinInterval = setInterval(() => {
       for(let i = 0; i < 9; i++) {
          document.getElementById('c'+i).src = getRandomImage();
       }
-    }, 100); 
+    }, 80); 
 
     setTimeout(() => {
       clearInterval(spinInterval);
+      for(let i = 0; i < 9; i++) {
+        document.getElementById('box' + i).classList.remove('blur-effect');
+      }
       finalizeSpin();
     }, 1500); 
   }
@@ -276,7 +385,7 @@
       document.getElementById('bgMusic').pause(); 
       let scaryAudio = document.getElementById('scarySound');
       scaryAudio.volume = 1.0;
-      scaryAudio.currentTime = 0; // Ensures the scary sound also plays from start
+      scaryAudio.currentTime = 0;
       scaryAudio.play();
 
       document.getElementById('overlay').style.display = 'block';
@@ -293,10 +402,10 @@
       updateBalanceDisplay();
       
       document.getElementById('message').innerText = `Κέρδισες ${winnings}€!`;
-      document.getElementById('message').style.color = "#4CAF50"; 
+      document.getElementById('message').style.color = var(--win-green); 
     } else {
       document.getElementById('message').innerText = "Δεν κέρδισες. Ξανά προσπάθησε!";
-      document.getElementById('message').style.color = "#aaa"; 
+      document.getElementById('message').style.color = "#6a6a7a"; 
     }
   }
 
