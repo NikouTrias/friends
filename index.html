@@ -1,429 +1,427 @@
 <!DOCTYPE html>
-<html lang="el">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Friendship Slots</title>
 <style>
-  :root {
-    --gold: #FFD700;
-    --gold-glow: rgba(255, 215, 0, 0.35);
-    --bg-dark: #0f0f12;
-    --card-bg: #1a1a24;
-    --win-green: #00E676;
-    --panel-bg: #111116;
-  }
-
-  body { 
-    text-align: center; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    background-color: var(--bg-dark); 
-    color: #f5f5f7; 
-    margin: 0;
-    padding: 20px 12px; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    box-sizing: border-box;
-    justify-content: center;
-  }
-
-  h1 {
-    font-size: 2rem;
-    margin: 0 0 20px 0;
-    font-weight: 800;
-    letter-spacing: 1px;
-    background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-transform: uppercase;
-  }
-  
-  .slot-machine { 
-    width: 100%;
-    max-width: 480px; 
-    background: var(--card-bg); 
-    padding: 24px; 
-    border-radius: 24px; 
-    border: 1px solid rgba(255, 215, 0, 0.2); 
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px var(--gold-glow);
-    box-sizing: border-box;
-  }
-  
-  .grid-container {
-    position: relative;
-    background: var(--panel-bg);
-    padding: 12px;
-    border-radius: 16px;
-    border: 2px solid #2a2a3a;
-    margin-bottom: 20px;
-    box-shadow: inset 0 4px 20px rgba(0,0,0,0.6);
-  }
-
-  .grid { 
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 10px; 
-    position: relative;
-  }
-  
-  .payline {
-    position: absolute;
-    top: 50%;
-    left: -12px;
-    right: -12px;
-    height: 4px;
-    background: linear-gradient(90deg, transparent, #ff3366, #ff3366, transparent);
-    transform: translateY(-50%);
-    z-index: 10;
-    pointer-events: none;
-    box-shadow: 0 0 10px #ff3366;
-  }
-  
-  .cell { 
-    width: 100%; 
-    aspect-ratio: 1 / 1; 
-    background: #0a0a0f; 
-    overflow: hidden; 
-    border-radius: 12px; 
-    border: 1px solid #3a3a4a;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s ease-out;
-  }
-  
-  .cell img { 
-    width: 85%; 
-    height: 85%; 
-    object-fit: contain; 
-    display: block;
-    transition: filter 0.1s ease;
-  }
-
-  .blur-effect img {
-    filter: blur(4px);
-    transform: scaleY(1.2);
-  }
-  
-  button { 
-    width: 100%;
-    padding: 16px 0; 
-    font-size: 1.35rem; 
-    cursor: pointer; 
-    background: linear-gradient(135deg, #FFE043 0%, #D4AF37 100%);
-    color: #000; 
-    border: none; 
-    border-radius: 14px; 
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
-    transition: all 0.2s ease;
-  }
-  
-  button:hover:not(:disabled) { 
-    background: linear-gradient(135deg, #fff 0%, #FFE043 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.5);
-  }
-
-  button:active:not(:disabled) {
-    transform: translateY(1px);
-  }
-
-  button:disabled { 
-    background: #2a2a35; 
-    color: #5a5a6a; 
-    cursor: not-allowed; 
-    box-shadow: none;
-    transform: none;
-  }
-  
-  #message { 
-    margin: 15px 0; 
-    font-size: 1.2rem; 
-    font-weight: 600; 
-    min-height: 28px; 
-    letter-spacing: 0.5px;
-  }
-  
-  .stats {
-    color: #a0a0b0;
-    font-size: 0.95rem;
-    background: var(--panel-bg);
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid #22222a;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-  }
-
-  .stat-block {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #6a6a7a;
-  }
-  
-  .balance-highlight { 
-    color: var(--win-green); 
-    font-weight: 700; 
-    font-size: 1.4rem; 
-  }
-
-  .spin-highlight {
-    color: #fff;
-    font-weight: 700;
-    font-size: 1.4rem;
-  }
-  
-  #bonus-popup { 
-    display: none; 
-    position: fixed; 
-    top: 50%; 
-    left: 50%; 
-    width: 88%;
-    max-width: 400px;
-    transform: translate(-50%, -50%); 
-    background: linear-gradient(145deg, #8b0000 0%, #4a0000 100%); 
-    color: white; 
-    padding: 35px 25px; 
-    border-radius: 24px; 
-    font-size: 1.8rem; 
-    font-weight: 800; 
-    z-index: 1000; 
-    text-align: center; 
-    box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 50px rgba(255, 0, 0, 0.4);
-    border: 2px solid rgba(255,255,255,0.1);
-    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    box-sizing: border-box;
-  }
-
-  #bonus-popup .sub-text {
-    font-size: 1.1rem;
-    font-weight: 400;
-    color: #ffb3b3;
-    margin-top: 15px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-  
-  #overlay { 
-    display: none; 
-    position: fixed; 
-    top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(5, 5, 8, 0.85); 
-    backdrop-filter: blur(8px);
-    z-index: 999; 
-  }
-
-  @keyframes popIn {
-    0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  }
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;overflow-x:hidden;padding:20px 0;}
+body.shake{animation:bodyShake 0.6s ease-in-out;}
+@keyframes bodyShake{0%,100%{transform:translateX(0)}10%,50%,90%{transform:translateX(-12px)}30%,70%{transform:translateX(12px)}}
+body.red-flash{animation:redFlash 0.25s ease-in-out 6;}
+@keyframes redFlash{0%,100%{background:#0a0a0f}50%{background:#3a0000}}
+.bg-stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle var(--t) ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
+.machine{position:relative;z-index:1;width:min(520px,100vw - 20px);background:linear-gradient(170deg,#1a1025 0%,#0d0d1a 60%,#1a0d12 100%);border:2px solid #3a2a5e;border-radius:24px;padding:28px 24px 24px;box-shadow:0 0 60px rgba(180,100,255,.15),inset 0 1px 0 rgba(255,255,255,.05);transition:box-shadow .3s;}
+.machine.bonus-glow{box-shadow:0 0 80px rgba(255,0,0,.8),0 0 160px rgba(255,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);}
+.machine::before{content:'';position:absolute;inset:-2px;border-radius:26px;background:linear-gradient(135deg,#9b59b6,#e91e63,#ff9800,#4caf50,#2196f3,#9b59b6);background-size:300% 300%;animation:borderGlow 4s linear infinite;z-index:-1;filter:blur(2px);opacity:.6;}
+.machine.bonus-border::before{background:linear-gradient(135deg,#ff0000,#ff6600,#ff0000,#ff6600);animation:borderGlow .4s linear infinite;opacity:1;filter:blur(3px);}
+@keyframes borderGlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.title{text-align:center;font-family:'Oswald',sans-serif;font-size:28px;font-weight:700;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(90deg,#f9d423,#ff6b6b,#f9d423);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:titleShimmer 2s linear infinite;margin-bottom:6px;}
+@keyframes titleShimmer{0%{background-position:0%}100%{background-position:200%}}
+.subtitle{text-align:center;color:#888;font-size:13px;letter-spacing:2px;margin-bottom:22px;}
+.reels-wrap{position:relative;background:#050508;border-radius:16px;padding:12px;border:1px solid #2a1a3e;margin-bottom:18px;overflow:hidden;transition:border-color .3s;}
+.reels-wrap.bonus-reels{border-color:#ff0000;box-shadow:inset 0 0 30px rgba(255,0,0,.2);}
+.reels-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);pointer-events:none;z-index:10;border-radius:16px 16px 0 0;}
+.reels-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent);pointer-events:none;z-index:10;border-radius:0 0 16px 16px;}
+.payline-mid{position:absolute;left:12px;right:12px;top:50%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,220,50,.7),transparent);z-index:20;pointer-events:none;transform:translateY(-50%);box-shadow:0 0 8px rgba(255,220,50,.5);}
+.payline-mid.bonus-line{background:linear-gradient(90deg,transparent,rgba(255,0,0,1),transparent);box-shadow:0 0 20px rgba(255,0,0,1);animation:linePulse .3s ease-in-out infinite;}
+@keyframes linePulse{0%,100%{opacity:1}50%{opacity:.3}}
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.reel-col{border-radius:10px;overflow:hidden;height:252px;position:relative;border:1px solid #222;transition:border-color .3s;}
+.reel-col.bonus-reel{border-color:#ff0000;animation:reelBorderFlash .4s ease-in-out infinite;}
+@keyframes reelBorderFlash{0%,100%{border-color:#ff0000;box-shadow:0 0 15px rgba(255,0,0,.6)}50%{border-color:#ff6600;box-shadow:0 0 30px rgba(255,100,0,.8)}}
+.reel-track{display:flex;flex-direction:column;transition:none;}
+.reel-track.spinning{animation:reelSpin .08s linear infinite;}
+@keyframes reelSpin{0%{transform:translateY(0)}100%{transform:translateY(-84px)}}
+.symbol{width:100%;height:84px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#0d0d18;overflow:hidden;transition:background .2s;}
+.symbol img{width:80%;height:80%;object-fit:contain;display:block;}
+.symbol.win-flash{animation:flashWin .4s ease-in-out 4;}
+.symbol.bonus-cell{animation:bonusCellPulse .5s ease-in-out infinite;}
+@keyframes flashWin{0%,100%{background:#0d0d18}50%{background:rgba(255,215,0,.25)}}
+@keyframes bonusCellPulse{0%,100%{background:#1a0000}50%{background:#330000}}
+.btn-row{display:flex;gap:10px;margin-bottom:14px;}
+.btn{flex:1;padding:16px 0;border:none;border-radius:12px;font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .15s;position:relative;overflow:hidden;}
+.btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .3s;}
+.btn:hover::before{left:100%;}
+.btn-spin{background:linear-gradient(135deg,#e91e63,#9c27b0);color:#fff;box-shadow:0 4px 20px rgba(233,30,99,.4);}
+.btn-spin:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 25px rgba(233,30,99,.6);}
+.btn-spin:active:not(:disabled){transform:translateY(0);}
+.btn-spin:disabled{background:linear-gradient(135deg,#333,#444);color:#666;cursor:not-allowed;box-shadow:none;}
+.btn-bet{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#aaa;border:1px solid #333;flex:0 0 auto;padding:16px 16px;font-size:14px;}
+.btn-bet:hover:not(:disabled){border-color:#9b59b6;color:#fff;}
+.btn-bet.active{background:linear-gradient(135deg,#4a1060,#2d1b69);border-color:#9b59b6;color:#fff;}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.stat-box{background:#0d0d18;border:1px solid #1e1e30;border-radius:10px;padding:10px 12px;text-align:center;}
+.stat-label{font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.stat-value{font-family:'Oswald',sans-serif;font-size:22px;font-weight:600;color:#f0e6ff;}
+.stat-value.green{color:#4caf50;}
+.stat-value.gold{color:#f9d423;}
+.stat-value.red{color:#f44336;}
+.message-box{background:#0a0a15;border:1px solid #1a1a30;border-radius:10px;padding:12px;text-align:center;min-height:48px;display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:20px;letter-spacing:1px;color:#888;transition:all .3s;margin-bottom:14px;}
+.paytable{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px;}
+.pay-item{background:#0a0a15;border:1px solid #1a1a2e;border-radius:8px;padding:8px 4px;text-align:center;font-size:11px;color:#666;}
+.pay-sym-imgs{display:flex;justify-content:center;gap:2px;margin-bottom:4px;}
+.pay-sym-imgs img{width:24px;height:24px;object-fit:contain;}
+.pay-mult{color:#f9d423;font-weight:600;font-size:13px;}
+.win-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.88);border-radius:24px;z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.win-overlay.show{display:flex;animation:overlayIn .3s ease-out;}
+@keyframes overlayIn{0%{opacity:0}100%{opacity:1}}
+.win-sym-row{display:flex;gap:10px;align-items:center;justify-content:center;}
+.win-sym-row img{width:70px;height:70px;object-fit:contain;}
+.win-title{font-family:'Oswald',sans-serif;font-size:52px;font-weight:700;background:linear-gradient(90deg,#f9d423,#ff6b6b,#f9d423);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:titleShimmer 1s linear infinite;text-align:center;}
+.win-amount{font-family:'Oswald',sans-serif;font-size:36px;color:#4caf50;text-align:center;}
+.win-btn{background:linear-gradient(135deg,#f9d423,#ff9800);color:#000;border:none;border-radius:12px;padding:14px 40px;font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;cursor:pointer;letter-spacing:2px;}
+.win-btn:hover{transform:scale(1.05);}
+.confetti-piece{position:absolute;width:8px;height:8px;border-radius:1px;animation:confettiFall 2s ease-in forwards;pointer-events:none;}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(400px) rotate(720deg);opacity:0}}
+#bonus-alert{display:none;position:fixed;inset:0;z-index:1100;background:#000;align-items:center;justify-content:center;flex-direction:column;gap:20px;animation:alertFlicker .15s steps(1) infinite;}
+#bonus-alert.show{display:flex;}
+@keyframes alertFlicker{0%,100%{background:#000}50%{background:#1a0000}}
+.alert-siren{display:flex;gap:40px;margin-bottom:10px;}
+.siren-light{width:60px;height:60px;border-radius:50%;background:#ff0000;box-shadow:0 0 40px #ff0000,0 0 80px #ff0000;animation:sirenPulse .3s ease-in-out infinite alternate;}
+.siren-light:nth-child(2){animation-delay:.15s;}
+@keyframes sirenPulse{0%{opacity:.2;transform:scale(0.8)}100%{opacity:1;transform:scale(1.1)}}
+.alert-text{font-family:'Oswald',sans-serif;font-size:clamp(48px,12vw,90px);font-weight:700;color:#ff0000;letter-spacing:6px;text-align:center;text-shadow:0 0 30px #ff0000,0 0 60px #ff0000;animation:alertTextPulse .3s ease-in-out infinite alternate;line-height:1;}
+@keyframes alertTextPulse{0%{text-shadow:0 0 20px #ff0000}100%{text-shadow:0 0 60px #ff0000,0 0 120px #ff6600}}
+.alert-sub{font-family:'Oswald',sans-serif;font-size:clamp(18px,4vw,28px);color:#ff6666;letter-spacing:4px;text-align:center;animation:alertTextPulse .5s ease-in-out infinite alternate;}
+.alert-bar{width:min(400px,80vw);height:8px;background:#1a0000;border-radius:4px;overflow:hidden;margin-top:10px;}
+.alert-bar-fill{height:100%;background:linear-gradient(90deg,#ff0000,#ff6600);border-radius:4px;animation:barFill 2s linear forwards;width:0%;}
+@keyframes barFill{0%{width:0%}100%{width:100%}}
+#overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:999;}
+#bonus-popup{display:none;position:fixed;top:50%;left:50%;width:90%;max-width:460px;transform:translate(-50%,-50%);background:linear-gradient(135deg,#8b0000,#4a0000);color:white;padding:40px 28px;border-radius:20px;font-size:38px;font-weight:bold;z-index:1000;text-align:center;box-shadow:0 0 80px rgba(255,0,0,.9),0 0 160px rgba(255,0,0,.4);border:4px solid #ff0000;font-family:'Oswald',sans-serif;letter-spacing:3px;animation:bonusPop .4s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes bonusPop{0%{transform:translate(-50%,-50%) scale(0.05);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+#bonus-popup .bonus-icon{font-size:64px;display:block;margin-bottom:12px;animation:iconSpin 1s ease-out;}
+@keyframes iconSpin{0%{transform:rotate(-20deg) scale(0.5)}100%{transform:rotate(0deg) scale(1)}}
+#bonus-popup .bonus-title{font-size:38px;line-height:1.1;color:#fff;text-shadow:0 0 20px rgba(255,100,100,.8);}
+#bonus-popup .bonus-sub{font-size:20px;color:#ffaaaa;margin-top:12px;letter-spacing:2px;}
+#bonus-popup button{margin-top:24px;background:linear-gradient(135deg,#ff0000,#cc0000);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;cursor:pointer;letter-spacing:3px;box-shadow:0 4px 20px rgba(255,0,0,.5);transition:all .15s;}
+#bonus-popup button:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,0,0,.7);}
 </style>
 </head>
 <body>
 
-<audio id="bgMusic" loop autoplay>
-  <source src="music.mp3" type="audio/mpeg">
-</audio>
-<audio id="scarySound">
-  <source src="scary.mp3" type="audio/mpeg">
-</audio>
-<audio id="coinSound">
-  <source src="coin.mp3" type="audio/mpeg">
-</audio>
+<audio id="bgMusic" loop><source src="music.mp3" type="audio/mpeg"></audio>
+<audio id="scarySound"><source src="scary.mp3" type="audio/mpeg"></audio>
+<audio id="coinSound"><source src="coin.mp3" type="audio/mpeg"></audio>
 
-<h1>The Friendship Slots</h1>
+<div class="bg-stars" id="stars"></div>
 
-<div class="slot-machine">
-  <div class="grid-container">
-    <div class="payline"></div>
-    <div class="grid" id="grid">
-      <div class="cell" id="box0"><img src="img1.png" id="c0"></div>
-      <div class="cell" id="box1"><img src="img2.png" id="c1"></div>
-      <div class="cell" id="box2"><img src="img3.png" id="c2"></div>
-      <div class="cell" id="box3"><img src="img2.png" id="c3"></div>
-      <div class="cell" id="box4"><img src="img3.png" id="c4"></div>
-      <div class="cell" id="box5"><img src="img1.png" id="c5"></div>
-      <div class="cell" id="box6"><img src="img3.png" id="c6"></div>
-      <div class="cell" id="box7"><img src="img1.png" id="c7"></div>
-      <div class="cell" id="box8"><img src="img2.png" id="c8"></div>
+<div class="machine" id="machine">
+  <div class="win-overlay" id="winOverlay">
+    <div class="win-sym-row" id="winSyms"></div>
+    <div class="win-title" id="winTitle">WIN!</div>
+    <div class="win-amount" id="winAmount">+0€</div>
+    <button class="win-btn" onclick="closeWin()">COLLECT</button>
+  </div>
+
+  <div class="title">✦ Friendship Slots ✦</div>
+  <div class="subtitle">MATCH THE MIDDLE ROW TO WIN</div>
+
+  <div class="reels-wrap" id="reelsWrap">
+    <div class="payline-mid" id="paylineMid"></div>
+    <div class="reels" id="reels">
+      <div class="reel-col" id="rc0"><div class="reel-track" id="r0"></div></div>
+      <div class="reel-col" id="rc1"><div class="reel-track" id="r1"></div></div>
+      <div class="reel-col" id="rc2"><div class="reel-track" id="r2"></div></div>
     </div>
   </div>
-  
-  <button id="spinBtn" onclick="startSpin()">Spin (1€)</button>
-  <div id="message"></div>
-  
-  <div class="stats">
-    <div class="stat-block">
-      <span class="stat-label">Υπόλοιπο</span>
-      <span><span id="balanceDisplay" class="balance-highlight">10</span>€</span>
+
+  <div class="btn-row">
+    <button class="btn btn-bet" id="bet1" onclick="setBet(1)">BET 1€</button>
+    <button class="btn btn-bet" id="bet2" onclick="setBet(2)">BET 2€</button>
+    <button class="btn btn-bet active" id="bet3" onclick="setBet(3)">BET 3€</button>
+    <button class="btn btn-spin" id="spinBtn" onclick="spin()">SPIN</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">Balance</div>
+      <div class="stat-value green" id="balVal">100€</div>
     </div>
-    <div class="stat-block">
-      <span class="stat-label">Στροφές</span>
-      <span id="spinCount" class="spin-highlight">0</span>
+    <div class="stat-box">
+      <div class="stat-label">Bet</div>
+      <div class="stat-value gold" id="betVal">3€</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Spins</div>
+      <div class="stat-value" id="spinVal">0</div>
+    </div>
+  </div>
+
+  <div class="message-box" id="msgBox">Place your bet and spin!</div>
+
+  <div class="paytable">
+    <div class="pay-item">
+      <div class="pay-sym-imgs"><img src="img1.png"><img src="img1.png"><img src="img1.png"></div>
+      <div class="pay-mult">× 2</div>
+    </div>
+    <div class="pay-item">
+      <div class="pay-sym-imgs"><img src="img2.png"><img src="img2.png"><img src="img2.png"></div>
+      <div class="pay-mult">× 3</div>
+    </div>
+    <div class="pay-item">
+      <div class="pay-sym-imgs"><img src="img3.png"><img src="img3.png"><img src="img3.png"></div>
+      <div class="pay-mult">× 5</div>
     </div>
   </div>
 </div>
 
+<!-- BONUS ALERT SCREEN -->
+<div id="bonus-alert">
+  <div class="alert-siren">
+    <div class="siren-light"></div>
+    <div class="siren-light"></div>
+  </div>
+  <div class="alert-text">ΜΠΟΝΟΥΣ!</div>
+  <div class="alert-sub">ΕΤΟΙΜΑΣΟΥ...</div>
+  <div class="alert-bar"><div class="alert-bar-fill" id="alertBar"></div></div>
+</div>
+
+<!-- BONUS POPUP -->
 <div id="overlay" onclick="closeBonus()"></div>
-<div id="bonus-popup" onclick="closeBonus()">
-  ΜΠΗΚΕΣ ΜΠΟΝΟΥΣ
-  <div class="sub-text">Κάνε ταυτοποίηση</div>
+<div id="bonus-popup">
+  <span class="bonus-icon">🚨</span>
+  <div class="bonus-title">ΜΠΗΚΕΣ ΜΠΟΝΟΥΣ</div>
+  <div class="bonus-sub">ΚΑΝΕ ΤΑΥΤΟΠΟΙΗΣΗ</div>
+  <button onclick="closeBonus()">ΟΚ</button>
 </div>
 
 <script>
-  const images = ['img1.png', 'img2.png', 'img3.png'];
+  const IMGS = ['img1.png','img2.png','img3.png'];
+  const MULTS = {'img1.png':2,'img2.png':3,'img3.png':5};
+
+  let balance = 100;
+  let bet = 3;
   let spins = 0;
-  let balance = 10;
-  const bet = 1;
-  let isSpinning = false;
+  let spinning = false;
   let musicStarted = false;
 
-  window.onload = function() {
+  window.onload = function(){
     let music = document.getElementById('bgMusic');
     music.volume = 0.5;
-    
-    music.play().then(() => {
-      musicStarted = true;
-    }).catch(() => {
-      document.body.addEventListener('click', function startAudio() {
-        if (!musicStarted) {
-           music.play();
-           musicStarted = true;
-        }
+    music.play().then(()=>{ musicStarted=true; }).catch(()=>{
+      document.body.addEventListener('click', function startAudio(){
+        if(!musicStarted){ music.play(); musicStarted=true; }
         document.body.removeEventListener('click', startAudio);
       });
     });
+    buildStars();
+    initReels();
   };
 
-  // Keyboard spacebar trigger
-  window.addEventListener('keydown', function(e) {
-    if (e.code === 'Space' || e.key === ' ') {
-      e.preventDefault(); 
-      startSpin();
-    }
-  });
+  function rndImg(){ return IMGS[Math.floor(Math.random()*IMGS.length)]; }
 
-  function getRandomImage() {
-    return images[Math.floor(Math.random() * images.length)];
+  function makeSymbol(src, bonus){
+    const d = document.createElement('div');
+    d.className = 'symbol' + (bonus ? ' bonus-cell' : '');
+    const img = document.createElement('img');
+    img.src = src;
+    d.appendChild(img);
+    return d;
   }
 
-  function startSpin() {
-    if (isSpinning) return;
+  function buildReel(id){
+    const track = document.getElementById('r'+id);
+    track.innerHTML = '';
+    for(let i=0;i<6;i++) track.appendChild(makeSymbol(rndImg(), false));
+  }
 
-    if (balance < bet) {
-      document.getElementById('message').innerText = "Δεν έχεις αρκετά χρήματα!";
-      document.getElementById('message').style.color = "#ff3366";
-      return;
-    }
+  function initReels(){
+    for(let i=0;i<3;i++) buildReel(i);
+    updateDisplay();
+  }
+
+  function setBet(v){
+    bet = v;
+    [1,2,3].forEach(n=>{
+      document.getElementById('bet'+n).classList.toggle('active', n===v);
+    });
+    document.getElementById('betVal').textContent = v+'€';
+  }
+
+  function updateDisplay(){
+    document.getElementById('balVal').textContent = balance+'€';
+    document.getElementById('spinVal').textContent = spins;
+    const bv = document.getElementById('balVal');
+    bv.className = 'stat-value '+(balance<=5?'red':balance<=20?'gold':'green');
+  }
+
+  function setMsg(txt, color){
+    const b = document.getElementById('msgBox');
+    b.textContent = txt;
+    b.style.color = color||'#888';
+    b.style.borderColor = color ? color+'44' : '#1a1a30';
+  }
+
+  function spin(){
+    if(spinning) return;
+    if(balance < bet){ setMsg('Δεν έχεις αρκετά χρήματα! 💸','#f44336'); return; }
 
     let coinAudio = document.getElementById('coinSound');
-    coinAudio.volume = 0.1;
+    coinAudio.volume = 0.2;
     coinAudio.currentTime = 0;
-    coinAudio.play().catch(e => console.log("Audio blocked"));
+    coinAudio.play().catch(e=>{});
 
     balance -= bet;
-    updateBalanceDisplay();
-
-    isSpinning = true;
     spins++;
-    
-    document.getElementById('spinCount').innerText = spins;
-    document.getElementById('message').innerText = "Γυρνάει...";
-    document.getElementById('message').style.color = "#a0a0b0";
+    updateDisplay();
+    spinning = true;
     document.getElementById('spinBtn').disabled = true;
+    document.getElementById('spinBtn').textContent = '⟳ SPINNING';
+    setMsg('Γυρνάει...','#aaa');
 
-    for(let i = 0; i < 9; i++) {
-      document.getElementById('box' + i).classList.add('blur-effect');
-    }
+    const tracks = [document.getElementById('r0'),document.getElementById('r1'),document.getElementById('r2')];
+    tracks.forEach(t => { t.classList.add('spinning'); });
 
-    let spinInterval = setInterval(() => {
-      for(let i = 0; i < 9; i++) {
-         document.getElementById('c'+i).src = getRandomImage();
-      }
-    }, 80); 
+    const stopTimes = [900,1150,1400];
+    const finalImgs = [];
+    const isBonusSpin = (spins===10);
 
-    setTimeout(() => {
-      clearInterval(spinInterval);
-      for(let i = 0; i < 9; i++) {
-        document.getElementById('box' + i).classList.remove('blur-effect');
-      }
-      finalizeSpin();
-    }, 1500); 
+    tracks.forEach((t,i)=>{
+      setTimeout(()=>{
+        t.classList.remove('spinning');
+        t.style.transform = '';
+        const syms = [];
+        for(let s=0;s<6;s++){
+          syms.push(isBonusSpin ? 'img2.png' : rndImg());
+        }
+        finalImgs[i] = syms[1];
+        t.innerHTML = '';
+        syms.forEach(src => t.appendChild(makeSymbol(src, isBonusSpin)));
+        if(i===2) setTimeout(()=>evaluate(finalImgs), 100);
+      }, stopTimes[i]);
+    });
   }
 
-  function finalizeSpin() {
-    let middleRow = [];
-    
-    if (spins === 10) {
-      for(let i = 0; i < 9; i++) {
-        let img = (i >= 3 && i <= 5) ? 'img2.png' : getRandomImage(); 
-        document.getElementById('c'+i).src = img;
-        if(i >= 3 && i <= 5) middleRow.push(img);
-      }
-    } else {
-      for(let i = 0; i < 9; i++) {
-         let img = getRandomImage();
-         document.getElementById('c'+i).src = img;
-         if(i >= 3 && i <= 5) middleRow.push(img);
-      }
-    }
+  function triggerBonusSequence(){
+    document.getElementById('bgMusic').pause();
+    // Use a fresh Audio object to guarantee playback regardless of prior state
+    const scary = new Audio('scary.mp3');
+    scary.volume = 1.0;
+    scary.play().catch(e=> console.log('scary play blocked:', e));
 
-    checkWin(middleRow);
-    isSpinning = false;
-    document.getElementById('spinBtn').disabled = false;
-  }
+    document.body.classList.add('shake');
+    setTimeout(()=> document.body.classList.remove('shake'), 700);
+    setTimeout(()=>{ document.body.classList.add('red-flash'); }, 200);
+    setTimeout(()=>{ document.body.classList.remove('red-flash'); }, 1800);
 
-  function checkWin(row) {
-    if (spins === 10) {
-      document.getElementById('bgMusic').pause(); 
-      let scaryAudio = document.getElementById('scarySound');
-      scaryAudio.volume = 1.0;
-      scaryAudio.currentTime = 0;
-      scaryAudio.play();
+    document.getElementById('machine').classList.add('bonus-glow','bonus-border');
+    document.getElementById('reelsWrap').classList.add('bonus-reels');
+    document.getElementById('paylineMid').classList.add('bonus-line');
+    [0,1,2].forEach(i=> document.getElementById('rc'+i).classList.add('bonus-reel'));
 
+    setTimeout(()=>{
+      const alert = document.getElementById('bonus-alert');
+      alert.classList.add('show');
+      const bar = document.getElementById('alertBar');
+      bar.style.animation = 'none';
+      void bar.offsetWidth;
+      bar.style.animation = 'barFill 2s linear forwards';
+    }, 600);
+
+    setTimeout(()=>{
+      document.getElementById('bonus-alert').classList.remove('show');
       document.getElementById('overlay').style.display = 'block';
       document.getElementById('bonus-popup').style.display = 'block';
-      document.getElementById('message').innerText = "";
+    }, 2800);
+  }
+
+  function evaluate(imgs){
+    spinning = false;
+    document.getElementById('spinBtn').disabled = false;
+    document.getElementById('spinBtn').textContent = 'SPIN';
+
+    if(spins===10){
+      triggerBonusSequence();
       return;
     }
 
-    let uniqueSymbols = new Set(row);
-    
-    if (uniqueSymbols.size === 1) {
-      let winnings = bet * 3;
-      balance += winnings;
-      updateBalanceDisplay();
-      
-      document.getElementById('message').innerText = `Κέρδισες ${winnings}€!`;
-      document.getElementById('message').style.color = "#00E676"; // Fixed: Changed from raw CSS variable syntax to string color literal
+    const [a,b,c] = imgs;
+    if(a===b && b===c){
+      const mult = MULTS[a]||2;
+      const win = bet*mult;
+      balance += win;
+      updateDisplay();
+      showWin(a, win, mult);
+    } else if(a===b || b===c || a===c){
+      const win = bet;
+      balance += win;
+      updateDisplay();
+      setMsg('Μισή νίκη! +'+win+'€ 🎉','#ff9800');
+      flashMiddle();
     } else {
-      document.getElementById('message').innerText = "Δεν κέρδισες. Ξανά προσπάθησε!";
-      document.getElementById('message').style.color = "#6a6a7a"; 
+      setMsg('Δεν κέρδισες. Ξανά προσπάθησε!','#666');
+    }
+
+    if(balance<=0){
+      setTimeout(()=>{
+        setMsg('Game Over! Δεν έχεις χρήματα! 💀','#f44336');
+        document.getElementById('spinBtn').disabled = true;
+      }, 800);
     }
   }
 
-  function updateBalanceDisplay() {
-    document.getElementById('balanceDisplay').innerText = balance;
+  function flashMiddle(){
+    for(let i=0;i<3;i++){
+      const cells = document.getElementById('r'+i).children;
+      if(cells[1]){
+        cells[1].classList.remove('win-flash');
+        void cells[1].offsetWidth;
+        cells[1].classList.add('win-flash');
+      }
+    }
   }
 
-  function closeBonus() {
+  function showWin(src, amount, mult){
+    const overlay = document.getElementById('winOverlay');
+    const row = document.getElementById('winSyms');
+    row.innerHTML = '';
+    for(let i=0;i<3;i++){
+      const img = document.createElement('img');
+      img.src = src;
+      row.appendChild(img);
+    }
+    document.getElementById('winTitle').textContent = mult>=5?'🎰 BIG WIN! 🎰':'WIN!';
+    document.getElementById('winAmount').textContent = '+'+amount+'€';
+    overlay.classList.add('show');
+    flashMiddle();
+    spawnConfetti(overlay, mult>=5?60:30);
+  }
+
+  function closeWin(){
+    document.getElementById('winOverlay').classList.remove('show');
+    document.querySelectorAll('.confetti-piece').forEach(e=>e.remove());
+    setMsg('Συνέχισε να παίζεις!','#4caf50');
+  }
+
+  function spawnConfetti(parent, count){
+    const colors=['#f9d423','#ff6b6b','#4caf50','#2196f3','#e91e63','#ff9800'];
+    for(let i=0;i<count;i++){
+      const d = document.createElement('div');
+      d.className = 'confetti-piece';
+      d.style.cssText = 'left:'+Math.random()*100+'%;top:'+Math.random()*20+'%;background:'+colors[Math.floor(Math.random()*colors.length)]+';animation-delay:'+Math.random()*.8+'s;animation-duration:'+(1.2+Math.random()*.8)+'s;';
+      parent.appendChild(d);
+    }
+  }
+
+  function closeBonus(){
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('bonus-popup').style.display = 'none';
-    document.getElementById('bgMusic').play(); 
+    document.getElementById('bgMusic').play();
+  }
+
+  function buildStars(){
+    const c = document.getElementById('stars');
+    for(let i=0;i<80;i++){
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.style.cssText = 'left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;--t:'+(2+Math.random()*4)+'s;animation-delay:'+Math.random()*4+'s;opacity:'+Math.random()*.5;
+      c.appendChild(s);
+    }
   }
 </script>
 </body>
